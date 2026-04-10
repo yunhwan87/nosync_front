@@ -8,9 +8,10 @@
   --text-primary: #ececec;
   --text-secondary: #b4b4b4;
   
-  /* OnSync Primary Accent */
-  --accent-blue: #4f46e5;
-  --accent-green: #10a37f; /* ChatGPT Green as secondary accent */
+  /* OnSync Primary Accent - Updated for better visibility in Dark Mode */
+  --accent-blue: #6366f1; 
+  --accent-blue-light: #818cf8; /* Use this for small text and icons */
+  --accent-green: #10a37f; 
   
   /* Layout */
   --sidebar-width: 260px;

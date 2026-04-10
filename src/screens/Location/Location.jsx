@@ -123,7 +123,7 @@ const Location = ({ project }) => {
               <div className="location-main-content" onClick={() => toggleExpand(loc.id)}>
                 <div className="location-main-row">
                   <div className="location-img-box">
-                    <MapPin size={24} color="var(--accent-blue)" />
+                    <MapPin size={24} color="var(--accent-blue-light)" />
                   </div>
                   <div className="location-info-cluster">
                     <h3>{loc.title}</h3>
