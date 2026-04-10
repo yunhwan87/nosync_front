@@ -1,0 +1,163 @@
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--header-height) - 80px); /* Adjust based on App.jsx layout */
+  max-width: var(--msg-max-width);
+  margin: 0 auto;
+  position: relative;
+}
+
+.chat-feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 0 100px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.message-row {
+  display: flex;
+  gap: 20px;
+  animation: messageFadeIn 0.3s ease-out;
+}
+
+@keyframes messageFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.avatar-container {
+  flex-shrink: 0;
+}
+
+.ai-avatar, .user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.ai-avatar {
+  background-color: var(--accent-green);
+}
+
+.user-avatar {
+  background-color: var(--accent-blue);
+}
+
+.message-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.content-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+
+.message-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 4px;
+  color: var(--text-secondary);
+  border-radius: 4px;
+  transition: var(--transition-fast);
+}
+
+.action-btn:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  padding-top: 10px;
+}
+
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+  background-color: var(--text-secondary);
+  border-radius: 50%;
+  animation: typing 1s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+  0%, 100% { transform: translateY(0); opacity: 0.3; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* Input Area */
+.input-area {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-main);
+  padding: 20px 0;
+}
+
+.input-wrapper {
+  background-color: var(--surface-input);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.input-wrapper textarea {
+  flex: 1;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 1rem;
+  resize: none;
+  max-height: 200px;
+  padding: 8px 0;
+}
+
+.attach-btn, .send-btn {
+  color: var(--text-secondary);
+  padding: 8px;
+  border-radius: 12px;
+  transition: var(--transition-fast);
+}
+
+.attach-btn:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.send-btn.active {
+  background-color: var(--text-primary);
+  color: var(--bg-main);
+}
+
+.send-btn:disabled {
+  opacity: 0.3;
+}
+
+.disclaimer {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 12px;
+}

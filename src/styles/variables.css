@@ -1,0 +1,30 @@
+:root {
+  /* ChatGPT Dark Mode Palette */
+  --bg-main: #212121;
+  --bg-sidebar: #171717;
+  --surface-input: #2f2f2f;
+  --surface-hover: #343434;
+  
+  --text-primary: #ececec;
+  --text-secondary: #b4b4b4;
+  
+  /* OnSync Primary Accent */
+  --accent-blue: #4f46e5;
+  --accent-green: #10a37f; /* ChatGPT Green as secondary accent */
+  
+  /* Layout */
+  --sidebar-width: 260px;
+  --header-height: 60px;
+  --msg-max-width: 800px;
+  
+  /* Utilities */
+  --border-radius-sm: 8px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+  --transition-fast: 0.2s ease;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+}
