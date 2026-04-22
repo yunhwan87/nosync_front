@@ -1,0 +1,45 @@
+# OnSync Frontend Project Requirements
+
+## Core Dependencies
+- node: >= 18.0.0
+- npm: >= 9.0.0
+- react: ^18.2.0
+- react-dom: ^18.2.0
+- vite: ^5.2.0
+
+## UI & Animation
+- lucide-react: ^0.363.0 (Icon Library)
+- framer-motion: ^11.0.8 (Animation Engine)
+
+## Development Tools
+- @vitejs/plugin-react: ^4.2.1
+- eslint: ^8.57.0 (Coding standard linting)
+
+# FastAPI and ASGI server
+fastapi
+uvicorn
+
+# Database and migration
+sqlalchemy
+psycopg2-binary
+alembic
+
+# Settings and env
+pydantic
+pydantic-settings
+python-dotenv
+
+# HTTP clients
+httpx
+requests
+
+# Embedding experiment
+openai
+sentence-transformers
+numpy
+
+# Testing
+pytest
+
+# Internal QA UI
+streamlit

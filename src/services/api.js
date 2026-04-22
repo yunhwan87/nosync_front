@@ -1,50 +1,74 @@
+﻿import { BackendApiClient } from './frontend-api-client';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+
 /**
- * OnSync API Service Layer
- * Designed for interaction with AWS / FastAPI backend
+ * Singleton instance of the API Client
  */
+export const apiClient = new BackendApiClient(API_BASE);
 
-const API_BASE_URL = 'https://api.onsync-aws.com'; // Placeholder for AWS/FastAPI URL
+/**
+ * Health check to verify server status
+ */
+export async function healthCheck() {
+  return apiClient.health();
+}
 
-// Generic fetch wrapper with error handling
-const fetchAPI = async (endpoint, options = {}) => {
-  try {
-    // Current: Simulate AWS response with delay
-    // Future: Replace with actual fetch to FastAPI
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ success: true, data: null });
-      }, 500);
-    });
+/**
+ * Step 1 & 2 -> Step 3: Generate recommendations based on user inputs
+ * @param {Object} payload
+ */
+export async function generateRecommendations(payload = {}) {
+  const {
+    top_k = 5,
+    use_embedding = true,
+    use_rerank = false,
+    ignore_weekday_filter = false,
+    ...creatorPayload
+  } = payload;
 
-    /* Actual implementation placeholder:
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
-    const data = await response.json();
-    return { success: response.ok, data };
-    */
-  } catch (error) {
-    console.error('API Error:', error);
-    return { success: false, error: error.message };
-  }
-};
+  const formattedPayload = {
+    creator_request: creatorPayload,
+    top_k,
+    use_embedding,
+    use_rerank,
+    ignore_weekday_filter,
+  };
 
-export const projectService = {
-  getProjects: () => fetchAPI('/projects'),
-  getProjectById: (id) => fetchAPI(`/projects/${id}`),
-  createProject: (data) => fetchAPI('/projects', { method: 'POST', body: JSON.stringify(data) }),
-};
+  console.log('=== [STEP 2] Formatted Payload for Backend ===');
+  console.log(JSON.stringify(formattedPayload, null, 2));
 
-export const scheduleService = {
-  getSchedules: (projectId) => fetchAPI(`/schedules?project_id=${projectId}`),
-  createSchedule: (data) => fetchAPI('/schedules', { method: 'POST', body: JSON.stringify(data) }),
-};
+  return apiClient.generateRecommendations(formattedPayload);
+}
 
-export const locationService = {
-  getLocations: (projectId) => fetchAPI(`/locations?project_id=${projectId}`),
-  updateLocation: (id, data) => fetchAPI(`/locations/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-};
+/**
+ * Fetch recommendation details by request ID
+ */
+export async function getRecommendations(requestId) {
+  return apiClient.getRecommendations(Number(requestId));
+}
+
+/**
+ * Create a timeline (schedule) for a specific recommendation request
+ */
+export async function createTimeline(requestId, title = 'New Project Timeline') {
+  return apiClient.createTimeline({
+    request_id: Number(requestId),
+    title,
+    use_saved_recommendations: true,
+  });
+}
+
+/**
+ * Get full timeline details
+ */
+export async function getTimeline(timelineId) {
+  return apiClient.getTimeline(Number(timelineId));
+}
+
+/**
+ * Get request status and basic details
+ */
+export async function getRequestStatus(requestId) {
+  return apiClient.getCreatorRequest(Number(requestId));
+}
