@@ -15,13 +15,31 @@
 - @vitejs/plugin-react: ^4.2.1
 - eslint: ^8.57.0 (Coding standard linting)
 
-## Installation
-To install the necessary dependencies, run:
-```bash
-npm install
-```
+# FastAPI and ASGI server
+fastapi
+uvicorn
 
-## Running the Project
-```bash
-npm run dev
-```
+# Database and migration
+sqlalchemy
+psycopg2-binary
+alembic
+
+# Settings and env
+pydantic
+pydantic-settings
+python-dotenv
+
+# HTTP clients
+httpx
+requests
+
+# Embedding experiment
+openai
+sentence-transformers
+numpy
+
+# Testing
+pytest
+
+# Internal QA UI
+streamlit

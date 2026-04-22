@@ -26,3 +26,9 @@ yarn-error.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+# md files
+*.md
+
+# json files
+sample*.json
