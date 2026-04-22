@@ -13,8 +13,8 @@ import './Dashboard.css';
 
 
 
-const Dashboard = ({ onSelectProject, isWizardOpen, setIsWizardOpen }) => {
-  const [projects, setProjects] = useState(mockProjects);
+const Dashboard = ({ projects, setProjects, onSelectProject, isWizardOpen, setIsWizardOpen }) => {
+
   const handleProjectCreated = (projectToAdd) => {
     setProjects(prev => [...prev, projectToAdd]);
     if (onSelectProject) {

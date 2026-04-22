@@ -95,6 +95,8 @@ const ProjectWizard = ({ isOpen, onClose, onProjectCreated }) => {
   const [apiError, setApiError] = useState(null);
   const [lastGenerateMeta, setLastGenerateMeta] = useState(null);
   const [regionInput, setRegionInput] = useState('');
+  const [mapZoom, setMapZoom] = useState(7);
+  const [mapCenter, setMapCenter] = useState(center);
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -281,7 +283,8 @@ const ProjectWizard = ({ isOpen, onClose, onProjectCreated }) => {
         startDate: formatDate(newProject.startDate),
         endDate: formatDate(newProject.endDate),
         totalDays: calculateTotalDays(newProject.startDate, newProject.endDate),
-        members: ['David Kim']
+        members: ['David Kim'],
+        recommendations: recommendations.filter(p => selectedPlaceIds.includes(p.id))
       };
 
       onProjectCreated(projectToAdd);
@@ -304,11 +307,25 @@ const ProjectWizard = ({ isOpen, onClose, onProjectCreated }) => {
     setSelectedProvince(regionName);
     if (enName) {
       const val = enName.toLowerCase();
+      
+      // Zoom into the province
+      const province = koreaRegions.find(r => r.id === enName);
+      if (province) {
+        setMapCenter({ lat: province.lat, lng: province.lng });
+        setMapZoom(10);
+      }
+
       setNewProject(prev => ({
         ...prev,
         region_preference: [val]
       }));
     }
+  };
+
+  const resetMap = () => {
+    setMapCenter(center);
+    setMapZoom(7);
+    setSelectedProvince(null);
   };
 
   const handleAddRegion = () => {
@@ -524,10 +541,11 @@ const ProjectWizard = ({ isOpen, onClose, onProjectCreated }) => {
               <div className="selected-provinces-tab">
                 <button
                   className="province-tab active"
-                  onClick={() => setSelectedProvince(null)}
+                  onClick={resetMap}
                 >
-                  {getEnName(selectedProvince)}
+                  <ChevronLeft size={14} /> Back to Map
                 </button>
+                <span className="current-province-name">{getEnName(selectedProvince)}</span>
               </div>
             )}
           </div>
@@ -542,33 +560,70 @@ const ProjectWizard = ({ isOpen, onClose, onProjectCreated }) => {
           ) : (
             <GoogleMap
               mapContainerStyle={mapContainerStyle}
-              center={center}
-              zoom={7}
+              center={mapCenter}
+              zoom={mapZoom}
               options={mapOptions}
             >
-              {koreaRegions.map((region) => (
-                <MarkerF
-                  key={region.id}
-                  position={{ lat: region.lat, lng: region.lng }}
-                  label={{
-                    text: region.en,
-                    color: 'white',
-                    fontSize: '10px',
-                    fontWeight: '600',
-                    className: 'marker-label-map'
-                  }}
-                  onClick={() => toggleRegion(region.name, region.id)}
-                  icon={{
-                    path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                    fillColor: selectedProvince === region.name ? "#10a37f" : "#4f46e5",
-                    fillOpacity: 1,
-                    strokeWeight: 2,
-                    strokeColor: "#ffffff",
-                    scale: 0.9,
-                    anchor: { x: 12, y: 22 }
-                  }}
-                />
-              ))}
+              {!selectedProvince ? (
+                koreaRegions.map((region) => (
+                  <MarkerF
+                    key={region.id}
+                    position={{ lat: region.lat, lng: region.lng }}
+                    label={{
+                      text: region.en,
+                      color: 'white',
+                      fontSize: '10px',
+                      fontWeight: '600',
+                      className: 'marker-label-map'
+                    }}
+                    onClick={() => toggleRegion(region.name, region.id)}
+                    icon={{
+                      path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                      fillColor: selectedProvince === region.name ? "#10a37f" : "#4f46e5",
+                      fillOpacity: 1,
+                      strokeWeight: 2,
+                      strokeColor: "#ffffff",
+                      scale: 0.9,
+                      anchor: { x: 12, y: 22 }
+                    }}
+                  />
+                ))
+              ) : (
+                <>
+                  {/* Reset view button inside map or separate */}
+                  {REGION_DATA[selectedProvince]?.subRegions.map((sub, idx) => (
+                    sub.lat && sub.lng && (
+                      <MarkerF
+                        key={`${sub.en}-${idx}`}
+                        position={{ lat: sub.lat, lng: sub.lng }}
+                        label={{
+                          text: sub.en,
+                          color: 'white',
+                          fontSize: '10px',
+                          fontWeight: '600',
+                          className: 'marker-label-map sub'
+                        }}
+                        onClick={() => {
+                          const val = sub.en.toLowerCase();
+                          setNewProject(prev => ({
+                            ...prev,
+                            region_preference: [val]
+                          }));
+                        }}
+                        icon={{
+                          path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                          fillColor: newProject.region_preference.includes(sub.en.toLowerCase()) ? "#10a37f" : "#f59e0b",
+                          fillOpacity: 1,
+                          strokeWeight: 1,
+                          strokeColor: "#ffffff",
+                          scale: 0.7,
+                          anchor: { x: 12, y: 22 }
+                        }}
+                      />
+                    )
+                  ))}
+                </>
+              )}
             </GoogleMap>
           )}
         </div>

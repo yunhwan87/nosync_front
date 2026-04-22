@@ -274,3 +274,153 @@
     gap: 8px;
   }
 }
+
+/* View Toggle */
+.view-toggle-premium {
+  display: flex;
+  background-color: var(--surface-input);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-md);
+  padding: 4px;
+}
+
+.toggle-opt {
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.toggle-opt.active {
+  background-color: var(--accent-blue);
+  color: white;
+}
+
+/* Recommendations View */
+.recommendations-view-schedule {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.recommendations-grid-minimal {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+}
+
+.category-group-card {
+  background-color: var(--surface-input);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.category-group-header {
+  padding: 16px 20px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.category-group-header h3 {
+  font-size: 1rem;
+  flex: 1;
+  margin: 0;
+}
+
+.count-badge {
+  font-size: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  color: var(--text-secondary);
+}
+
+.category-items-list {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recommendation-list-item {
+  background-color: var(--bg-main);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--border-radius-md);
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.item-main {
+  flex: 1;
+}
+
+.item-main h4 {
+  font-size: 1rem;
+  margin: 0 0 4px 0;
+}
+
+.item-address {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 8px 0;
+}
+
+.item-reason {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.add-to-schedule-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.add-to-schedule-btn:hover {
+  background-color: #6366f1;
+  color: white;
+}
+
+.empty-recommendations {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  color: var(--text-secondary);
+  gap: 16px;
+}
+
+@media (max-width: 480px) {
+  .recommendations-grid-minimal {
+    grid-template-columns: 1fr;
+  }
+}
