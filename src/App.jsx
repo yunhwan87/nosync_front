@@ -20,7 +20,7 @@ import Schedule from './screens/Schedule/Schedule';
 import Location from './screens/Location/Location';
 import Chat from './screens/Chat/Chat';
 import CommunicationLog from './screens/Communication/CommunicationLog';
-import { mockLocations, mockSchedules } from './mocks/mockData';
+import { mockLocations, mockSchedules, mockProjects } from './mocks/mockData';
 import './styles/App.css';
 
 /**
@@ -36,6 +36,7 @@ const App = () => {
   // Lifted state for menu integration
   const [locations, setLocations] = useState(mockLocations);
   const [schedules, setSchedules] = useState(mockSchedules);
+  const [projects, setProjects] = useState(mockProjects);
 
   // Handle window resize
   useEffect(() => {
@@ -172,6 +173,8 @@ const App = () => {
         <section className="content-body">
           {activeTab === 'dashboard' && (
             <Dashboard 
+              projects={projects}
+              setProjects={setProjects}
               onSelectProject={handleProjectSelect} 
               isWizardOpen={isWizardOpen}
               setIsWizardOpen={setIsWizardOpen}
