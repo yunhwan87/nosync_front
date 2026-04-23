@@ -558,48 +558,70 @@ export const REGION_DATA = {
     "en": "Chungcheongbuk-do",
     "subRegions": [
       {
-        "kr": "괴산군",
-        "en": "Goesan"
-      },
-      {
-        "kr": "단양군",
-        "en": "Danyang"
-      },
-      {
-        "kr": "보은군",
-        "en": "Boeun"
-      },
-      {
-        "kr": "영동군",
-        "en": "Yeongdong"
-      },
-      {
-        "kr": "옥천군",
-        "en": "Okcheon"
-      },
-      {
-        "kr": "음성군",
-        "en": "Eumseong"
-      },
-      {
-        "kr": "제천시",
-        "en": "Jecheon"
-      },
-      {
-        "kr": "증평군",
-        "en": "Jeungpyeong"
-      },
-      {
-        "kr": "진천군",
-        "en": "Jincheon"
-      },
-      {
         "kr": "청주시",
-        "en": "Cheongju"
+        "en": "Cheongju-si",
+        "lat": 36.6424,
+        "lng": 127.489
       },
       {
         "kr": "충주시",
-        "en": "Chungju"
+        "en": "Chungju-si",
+        "lat": 36.9705,
+        "lng": 127.9522
+      },
+      {
+        "kr": "제천시",
+        "en": "Jecheon-si",
+        "lat": 37.1316,
+        "lng": 128.2066
+      },
+      {
+        "kr": "보은군",
+        "en": "Boeun-gun",
+        "lat": 36.4886,
+        "lng": 127.7697
+      },
+      {
+        "kr": "옥천군",
+        "en": "Okcheon-gun",
+        "lat": 36.3082,
+        "lng": 127.5772
+      },
+      {
+        "kr": "영동군",
+        "en": "Yeongdong-gun",
+        "lat": 36.1741,
+        "lng": 127.7872
+      },
+      {
+        "kr": "증평군",
+        "en": "Jeungpyeong-gun",
+        "lat": 36.7813,
+        "lng": 127.591
+      },
+      {
+        "kr": "진천군",
+        "en": "Jincheon-gun",
+        "lat": 36.8573,
+        "lng": 127.4373
+      },
+      {
+        "kr": "괴산군",
+        "en": "Goesan-gun",
+        "lat": 36.8109,
+        "lng": 127.7952
+      },
+      {
+        "kr": "음성군",
+        "en": "Eumseong-gun",
+        "lat": 36.9425,
+        "lng": 127.6893
+      },
+      {
+        "kr": "단양군",
+        "en": "Danyang-gun",
+        "lat": 36.9831,
+        "lng": 128.3572
       }
     ]
   },
