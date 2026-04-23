@@ -18,6 +18,7 @@ import {
 import Dashboard from './screens/Dashboard/Dashboard';
 import Schedule from './screens/Schedule/Schedule';
 import Location from './screens/Location/Location';
+import LocTest from './screens/LocTest/LocTest';
 import Chat from './screens/Chat/Chat';
 import CommunicationLog from './screens/Communication/CommunicationLog';
 import { mockLocations, mockSchedules, mockProjects } from './mocks/mockData';
@@ -37,6 +38,7 @@ const App = () => {
   const [locations, setLocations] = useState(mockLocations);
   const [schedules, setSchedules] = useState(mockSchedules);
   const [projects, setProjects] = useState(mockProjects);
+  const [locTestUnresolved, setLocTestUnresolved] = useState(0);
 
   // Handle window resize
   useEffect(() => {
@@ -74,6 +76,7 @@ const App = () => {
     { id: 'location', icon: MapPin, label: 'Locations' },
     { id: 'communication', icon: Bell, label: 'Requests' },
     { id: 'chat', icon: MessageSquare, label: 'Chat' },
+    { id: 'loc_test', icon: MapPin, label: 'Loc Test' },
   ];
 
   return (
@@ -127,6 +130,9 @@ const App = () => {
             >
               <item.icon size={18} />
               <span>{item.label}</span>
+              {item.id === 'loc_test' && locTestUnresolved > 0 && (
+                <span className="nav-alert-badge">{locTestUnresolved}</span>
+              )}
             </button>
           ))}
         </nav>
@@ -197,6 +203,16 @@ const App = () => {
             />
           )}
           {activeTab === 'chat' && <Chat project={currentProject} />}
+          {activeTab === 'loc_test' && (
+            <LocTest
+              project={currentProject}
+              locations={locations}
+              setLocations={setLocations}
+              schedules={schedules}
+              setSchedules={setSchedules}
+              onUnresolvedCount={setLocTestUnresolved}
+            />
+          )}
           {activeTab === 'communication' && (
             <CommunicationLog 
               locations={locations} 
@@ -204,7 +220,7 @@ const App = () => {
             />
           )}
 
-          {!['dashboard', 'schedule', 'location', 'chat', 'communication'].includes(activeTab) && (
+          {!['dashboard', 'schedule', 'location', 'chat', 'communication', 'loc_test'].includes(activeTab) && (
             <div className="empty-state">
               <p>{activeTab.toUpperCase()} screen is under construction.</p>
             </div>

@@ -32,3 +32,26 @@ Thumbs.db
 
 # json files
 sample*.json
+
+# Python (m2 backend)
+.venv/
+miniconda3/
+__pycache__/
+*.py[cod]
+
+# Gmail OAuth credentials (secret)
+credentials.json
+token.json
+
+# ML model files
+models/
+*.gguf
+ollama.tar.zst
+
+# Logs
+*.log
+
+# Runtime / binary
+bin/
+lib/
+data/

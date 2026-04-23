@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReqAgent DB Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --column-bg: #e4e7eb;
+            --card-bg: #ffffff;
+            --card-border: #d1d5db;
+            --accent-blue: #2563eb;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg-color); color: var(--text-primary); font-family: 'Outfit', sans-serif; min-height: 100vh; }
+        header { padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.25rem; font-weight: 600; color: var(--accent-blue); display: flex; align-items: center; gap: 0.5rem; }
+        .controls { display: flex; gap: 1rem; align-items: center; }
+        .btn { background: #fff; border: 1px solid var(--card-border); color: var(--text-primary); padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 0.9rem; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; font-weight: 500; }
+        .btn:hover:not(:disabled) { background: #f8fafc; border-color: var(--accent-blue); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-primary { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+        .btn-primary:hover:not(:disabled) { background: #1d4ed8; color: white; }
+        .btn-action { background: #fef3c7; color: #92400e; border-color: #fcd34d; font-size: 0.8rem; padding: 0.4rem 0.8rem; margin-top: 0.5rem; width: 100%; justify-content: center; }
+        .btn-send { background: #dcfce7; color: #166534; border-color: #86efac; font-size: 0.8rem; padding: 0.4rem 0.8rem; margin-top: 0.5rem; width: 100%; justify-content: center; }
+        .dashboard-container { display: grid; grid-template-columns: repeat(4, minmax(280px, 1fr)); gap: 1rem; padding: 1.5rem; padding-bottom: 60px; overflow-x: auto; align-items: start; }
+        .column { background: var(--column-bg); border-radius: 12px; padding: 0.75rem; min-height: calc(100vh - 120px); }
+        .column-header { margin-bottom: 1rem; padding: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .column-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); }
+        .count-badge { background: #fff; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.7rem; font-weight: 700; color: var(--accent-blue); }
+        .card { background: var(--card-bg); border-radius: 10px; padding: 1rem; margin-bottom: 0.75rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: var(--shadow); border: 1px solid transparent; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); border-color: var(--accent-blue); }
+        .card-id { font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; color: var(--text-secondary); margin-bottom: 0.4rem; }
+        .card-title { font-weight: 600; margin-bottom: 0.5rem; display: block; font-size: 0.95rem; }
+        .card-meta { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .status-pill { display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.65rem; font-weight: 700; }
+        .status-sent { background: #dbeafe; color: #1e40af; }
+        .status-action { background: #fef3c7; color: #92400e; }
+        .status-confirmed, .status-done { background: #dcfce7; color: #166534; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: #fff; width: 95%; max-width: 600px; max-height: 90vh; border-radius: 16px; padding: 2rem; position: relative; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-secondary); }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.6rem; border: 1px solid var(--card-border); border-radius: 8px; font-family: inherit; font-size: 0.9rem; }
+        .form-group input:focus { outline: none; border-color: var(--accent-blue); }
+        pre { background: #f8fafc; padding: 1rem; border-radius: 8px; overflow: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; border: 1px solid var(--card-border); white-space: pre-wrap; }
+        .action-item-box { background: #f8fafc; border: 1px solid var(--card-border); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
+        .action-task { font-weight: 600; margin-bottom: 0.75rem; display: block; color: var(--text-primary); }
+        .close-btn { cursor: pointer; font-size: 1.25rem; color: var(--text-secondary); }
+
+        /* Log Panel */
+        #log-panel { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: #0f172a; border-top: 2px solid #334155; transition: height 0.3s ease; height: 40px; }
+        #log-panel.expanded { height: 280px; }
+        #log-toggle { display: flex; align-items: center; gap: 0.5rem; padding: 0 1rem; height: 40px; cursor: pointer; user-select: none; color: #94a3b8; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; border-bottom: 1px solid #1e293b; }
+        #log-toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: #64748b; }
+        #log-toggle .dot.active { background: #22c55e; box-shadow: 0 0 6px #22c55e; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        #log-body { height: calc(100% - 40px); overflow-y: auto; padding: 0.5rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #94a3b8; }
+        .log-line { padding: 1px 0; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
+        .log-line.stream { color: #38bdf8; }
+        .log-line.error { color: #f87171; }
+        .log-line.success { color: #4ade80; }
+        .log-line.ts { color: #475569; margin-right: 0.5rem; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        ReqAgent DB Dashboard
+    </div>
+    <div class="controls">
+        <button class="btn btn-primary" onclick="openNewProjectModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            새 프로젝트
+        </button>
+        <button class="btn" onclick="fetchData()">새로고침</button>
+    </div>
+</header>
+
+<!-- Log Panel -->
+<div id="log-panel">
+    <div id="log-toggle" onclick="toggleLog()">
+        <span class="dot" id="log-dot"></span>
+        <span id="log-status">Ollama 로그 ▲</span>
+        <span id="log-last" style="margin-left:auto;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    </div>
+    <div id="log-body"></div>
+</div>
+
+<main class="dashboard-container">
+    <div class="column" id="col-step2">
+        <div class="column-header">
+            <h2 class="column-title">1. Drafts / Sent</h2>
+            <span class="count-badge" id="count-step2">0</span>
+        </div>
+        <div class="card-list"></div>
+    </div>
+    <div class="column" id="col-step3">
+        <div class="column-header">
+            <h2 class="column-title">2. Received</h2>
+            <span class="count-badge" id="count-step3">0</span>
+        </div>
+        <div class="card-list"></div>
+    </div>
+    <div class="column" id="col-step4">
+        <div class="column-header">
+            <h2 class="column-title">3. Action Required</h2>
+            <span class="count-badge" id="count-step4">0</span>
+        </div>
+        <div class="card-list"></div>
+    </div>
+    <div class="column" id="col-step5">
+        <div class="column-header">
+            <h2 class="column-title">4. Followup</h2>
+            <span class="count-badge" id="count-step5">0</span>
+        </div>
+        <div class="card-list"></div>
+    </div>
+</main>
+
+<!-- JSON Viewer Modal -->
+<div class="modal" id="viewer-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="viewer-title">상세 보기</h2>
+            <span class="close-btn" onclick="closeModal('viewer-modal')">&times;</span>
+        </div>
+        <pre id="viewer-json"></pre>
+    </div>
+</div>
+
+<!-- New Project Modal -->
+<div class="modal" id="new-project-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>새 프로젝트 시작</h2>
+            <span class="close-btn" onclick="closeModal('new-project-modal')">&times;</span>
+        </div>
+        <form id="new-project-form">
+            <div class="form-group">
+                <label>Creator Request ID</label>
+                <input type="number" name="creator_request_id" placeholder="예: 32" required>
+            </div>
+            <div class="form-group">
+                <label>Timeline Item Contact ID (UUID)</label>
+                <input type="text" name="timeline_item_contact_id" placeholder="예: 13d10a5e-a6c0-4612-adaf-1492286afe9a" required>
+            </div>
+            <div class="form-group">
+                <label>연락 수단</label>
+                <select name="contact_type">
+                    <option value="email">이메일 (Gmail)</option>
+                    <option value="messenger">메신저 (초안 생성만)</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1rem;padding:0.75rem;">
+                프로젝트 기동 (초안 생성 및 발송)
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Action Modal -->
+<div class="modal" id="action-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>액션 아이템 처리</h2>
+            <span class="close-btn" onclick="closeModal('action-modal')">&times;</span>
+        </div>
+        <div id="action-original-reply" style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1.5rem;max-height:200px;overflow-y:auto;background:#f1f5f9;padding:1rem;border-radius:8px;"></div>
+        <div id="action-items-container"></div>
+        <button id="action-submit-btn" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1rem;padding:0.75rem;">
+            답변 제출 및 후속 메일 생성
+        </button>
+    </div>
+</div>
+
+<!-- Followup Modal -->
+<div class="modal" id="followup-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>후속 초안 검수 및 발송</h2>
+            <span class="close-btn" onclick="closeModal('followup-modal')">&times;</span>
+        </div>
+        <div id="followup-preview" style="font-size:0.95rem;line-height:1.6;background:#f8fafc;border:1px solid var(--card-border);padding:1.5rem;border-radius:12px;margin-bottom:1.5rem;max-height:400px;overflow-y:auto;white-space:pre-wrap;"></div>
+        <div id="followup-meta" style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:1rem;"></div>
+        <div style="display:flex;gap:1rem;">
+            <button class="btn btn-primary" id="btn-confirm-send" style="flex:1;justify-content:center;padding:0.75rem;">검수 완료 및 최종 발송</button>
+            <button class="btn" onclick="closeModal('followup-modal')" style="flex:0.3;justify-content:center;">취소</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentData = null;
+
+    async function fetchData() {
+        try {
+            const resp = await fetch('/api/flow');
+            currentData = await resp.json();
+            renderDashboard(currentData);
+        } catch(e) {
+            console.error('Fetch failed', e);
+        }
+    }
+
+    function renderDashboard(data) {
+        document.querySelectorAll('.card-list').forEach(l => l.innerHTML = '');
+        const flows = Object.entries(data.flows || {});
+        let c = {s2:0, s3:0, s4:0, s5:0};
+
+        flows.forEach(([reqId, flow]) => {
+            const step2 = flow.step2;
+            const step4 = flow.step4;
+
+            // Col 1: Drafts / Sent
+            if (step2) {
+                c.s2++;
+                const card = createCard(
+                    step2.request_code || reqId,
+                    step2.venue_name || 'Unknown Venue',
+                    step2.status,
+                    'status-sent',
+                    step2
+                );
+                document.querySelector('#col-step2 .card-list').appendChild(card);
+            }
+
+            // Col 2: Received — step3에 inbound 메시지가 있는 경우
+            const step3 = flow.step3;
+            if (step3 && step3.inbound_count > 0) {
+                c.s3++;
+                const latestAt = step3.latest_at ? new Date(step3.latest_at).toLocaleString('ko-KR') : '';
+                const preview = (step3.latest_body || '').slice(0, 80).replace(/\n/g, ' ');
+                const card = createCard(
+                    step2?.request_code || reqId,
+                    step2?.venue_name || 'Unknown Venue',
+                    `${step3.inbound_count}통 수신 · ${latestAt}`,
+                    'status-sent',
+                    step3
+                );
+                const previewEl = document.createElement('div');
+                previewEl.style = 'font-size:0.75rem;color:#64748b;margin-top:0.5rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+                previewEl.innerText = preview;
+                card.appendChild(previewEl);
+                document.querySelector('#col-step3 .card-list').appendChild(card);
+            }
+
+            // Col 3: Action Required
+            if (step4 && step4.pending_actions && step4.pending_actions.length > 0) {
+                const unresolved = step4.pending_actions.filter(a => !a.user_response_text);
+                if (unresolved.length > 0) {
+                    c.s4++;
+                    const card = createCard(
+                        step2?.request_code || reqId,
+                        step2?.venue_name || 'Unknown Venue',
+                        `액션 ${unresolved.length}건 대기`,
+                        'status-action',
+                        step4
+                    );
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-action';
+                    btn.innerText = `액션 아이템 처리하기 (${unresolved.length}건)`;
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        openActionModal(reqId, step4.pending_actions, step2?.venue_name);
+                    };
+                    card.appendChild(btn);
+                    document.querySelector('#col-step4 .card-list').appendChild(card);
+                }
+            }
+
+            // Col 3: 확정 버튼 — 추출 완료됐는데 액션 아이템이 0개일 때
+            if (step3 && step3.is_confirmable && step2?.status !== 'CONFIRMED') {
+                c.s4++;
+                const card = createCard(
+                    step2?.request_code || reqId,
+                    step2?.venue_name || 'Unknown Venue',
+                    '확정 대기',
+                    'status-action',
+                    step3
+                );
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-send';
+                btn.innerText = '장소 확정하기';
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    executeApi('/api/confirm-venue', { req_id: reqId }, btn, '확정 처리 중...');
+                };
+                card.appendChild(btn);
+                document.querySelector('#col-step4 .card-list').appendChild(card);
+            }
+
+            // Col 4: Followup — step5는 별도 API에서 가져옴 (현재 /api/flow에 포함 예정)
+            if (flow.step5) {
+                c.s5++;
+                const draft = flow.step5;
+                const isSent = draft.status === 'SENT';
+                const card = createCard(
+                    step2?.request_code || reqId,
+                    step2?.venue_name || 'Unknown Venue',
+                    isSent ? 'SENT' : 'DRAFT READY',
+                    isSent ? 'status-done' : 'status-sent',
+                    draft
+                );
+                if (!isSent) {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-send';
+                    btn.innerText = '초안 검수 및 발송';
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        openFollowupModal(reqId, draft);
+                    };
+                    card.appendChild(btn);
+                }
+                document.querySelector('#col-step5 .card-list').appendChild(card);
+            }
+        });
+
+        document.getElementById('count-step2').innerText = c.s2;
+        document.getElementById('count-step3').innerText = c.s3;
+        document.getElementById('count-step4').innerText = c.s4;
+        document.getElementById('count-step5').innerText = c.s5;
+    }
+
+    function createCard(id, title, meta, statusClass, fullData) {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.onclick = () => showViewer(id, fullData);
+        div.innerHTML = `
+            <div class="card-id">${id}</div>
+            <strong class="card-title">${title}</strong>
+            <div class="card-meta">${meta || ''}</div>
+            ${statusClass ? `<span class="status-pill ${statusClass}">${(meta || '').toUpperCase()}</span>` : ''}
+        `;
+        return div;
+    }
+
+    function showViewer(title, data) {
+        document.getElementById('viewer-title').innerText = title;
+        document.getElementById('viewer-json').innerText = JSON.stringify(data, null, 2);
+        document.getElementById('viewer-modal').style.display = 'flex';
+    }
+
+    function openNewProjectModal() {
+        document.getElementById('new-project-modal').style.display = 'flex';
+    }
+
+    function openActionModal(reqId, actionItems, venueName) {
+        const container = document.getElementById('action-items-container');
+        container.innerHTML = '';
+
+        // 미답변 액션 아이템만 표시
+        const pending = actionItems.filter(a => !a.user_response_text);
+
+        document.getElementById('action-original-reply').innerText =
+            `[${venueName || reqId}] 처리할 액션 아이템 ${pending.length}건`;
+
+        pending.forEach(item => {
+            const box = document.createElement('div');
+            box.className = 'action-item-box';
+            box.innerHTML = `
+                <span class="action-task">Q: ${item.action_text}</span>
+                <input type="text"
+                    class="action-answer-input"
+                    data-action-id="${item.id}"
+                    placeholder="답변을 입력하세요..."
+                    style="width:100%;padding:0.5rem;border:1px solid #ccc;border-radius:4px;">
+            `;
+            container.appendChild(box);
+        });
+
+        const btn = document.getElementById('action-submit-btn');
+        btn.onclick = () => {
+            const answers = {};
+            document.querySelectorAll('.action-answer-input').forEach(input => {
+                if (input.value.trim()) {
+                    answers[input.dataset.actionId] = input.value.trim();
+                }
+            });
+            executeApi('/api/resolve-actions', { req_id: reqId, answers }, btn, '처리 중...');
+        };
+
+        document.getElementById('action-modal').style.display = 'flex';
+    }
+
+    function openFollowupModal(reqId, draftData) {
+        document.getElementById('followup-preview').innerText = draftData.draft_text || draftData.body_text || '';
+        document.getElementById('followup-meta').innerText = `생성 시각: ${draftData.created_at || ''}`;
+
+        const btn = document.getElementById('btn-confirm-send');
+        btn.onclick = () => executeApi('/api/send-followup', { req_id: reqId }, btn, '발송 중...');
+
+        document.getElementById('followup-modal').style.display = 'flex';
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    document.getElementById('new-project-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = {
+            creator_request_id: parseInt(formData.get('creator_request_id')),
+            timeline_item_contact_id: formData.get('timeline_item_contact_id'),
+            contact_type: formData.get('contact_type'),
+        };
+        executeApi('/api/new-project', data, e.target.querySelector('button'), '기동 중... (LLM 작동 중)');
+    };
+
+    async function executeApi(url, body, btn, loadingText) {
+        const originalText = btn.innerText;
+        try {
+            btn.disabled = true;
+            btn.innerText = loadingText;
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const result = await resp.json();
+            if (result.status === 'success') {
+                alert('완료되었습니다!');
+                document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+                fetchData();
+            } else {
+                alert('오류: ' + result.message);
+            }
+        } catch(err) {
+            alert('연결 오류: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = originalText;
+        }
+    }
+
+    window.onclick = (e) => {
+        if (e.target.classList.contains('modal')) e.target.style.display = 'none';
+    };
+
+    fetchData();
+    setInterval(fetchData, 30000);
+
+    // =========================================================
+    // Log Panel — SSE
+    // =========================================================
+    let logExpanded = false;
+    let streamActive = false;
+
+    function toggleLog() {
+        logExpanded = !logExpanded;
+        document.getElementById('log-panel').classList.toggle('expanded', logExpanded);
+        document.getElementById('log-status').innerText = logExpanded ? 'Ollama 로그 ▼' : 'Ollama 로그 ▲';
+    }
+
+    function appendLog(entry) {
+        const body = document.getElementById('log-body');
+        const line = document.createElement('div');
+        const msg = entry.msg || '';
+        line.className = 'log-line' +
+            (entry.stream ? ' stream' : '') +
+            (msg.includes('[!]') || msg.toLowerCase().includes('error') || msg.toLowerCase().includes('failed') ? ' error' : '') +
+            (msg.includes('[+]') ? ' success' : '');
+
+        if (entry.stream) {
+            // 스트리밍 토큰은 마지막 줄에 이어붙임
+            const last = body.lastElementChild;
+            if (last && last.classList.contains('stream')) {
+                last.innerText += msg;
+                document.getElementById('log-last').innerText = last.innerText.slice(-60);
+                return;
+            }
+        }
+        line.innerHTML = `<span class="ts">[${entry.ts}]</span>${msg}`;
+        body.appendChild(line);
+        body.scrollTop = body.scrollHeight;
+        document.getElementById('log-last').innerText = msg.slice(0, 80);
+    }
+
+    function startLogStream() {
+        const es = new EventSource('/api/logs/stream');
+        es.onopen = () => {
+            streamActive = true;
+            document.getElementById('log-dot').classList.add('active');
+        };
+        es.onmessage = (e) => {
+            try { appendLog(JSON.parse(e.data)); } catch {}
+        };
+        es.onerror = () => {
+            streamActive = false;
+            document.getElementById('log-dot').classList.remove('active');
+            setTimeout(startLogStream, 3000);
+        };
+    }
+    startLogStream();
+</script>
+</body>
+</html>

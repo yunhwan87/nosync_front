@@ -59,7 +59,10 @@ export const mockLocations = [
     cost: '500,000 KRW',
     depositStatus: 'Paid',
     note: 'Natural light preferred.',
-    aiSummary: 'Excellent lighting, but requires noise insulation.'
+    aiSummary: 'Excellent lighting, but requires noise insulation.',
+    creator_request_id: 1,
+    timeline_item_contact_id: 'tic-uuid-0001',
+    m2Status: 'EMAIL_SENT'
   }
 ];
 

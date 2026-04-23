@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReqAgent Flow Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --column-bg: #e4e7eb;
+            --card-bg: #ffffff;
+            --card-border: #d1d5db;
+            --accent-blue: #2563eb;
+            --accent-purple: #7c3aed;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+        }
+
+        header {
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #f8fafc;
+            border-color: var(--accent-blue);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #1d4ed8;
+            color: white;
+        }
+
+        .btn-action {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fcd34d;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            margin-top: 0.5rem;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background: #fbbf24;
+        }
+
+        .btn-send {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #86efac;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            margin-top: 0.5rem;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-send:hover:not(:disabled) {
+            background: #bbf7d0;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(280px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem;
+            overflow-x: auto;
+            align-items: start;
+        }
+
+        .column {
+            background: var(--column-bg);
+            border-radius: 12px;
+            padding: 0.75rem;
+            min-height: calc(100vh - 120px);
+        }
+
+        .column-header {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .column-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .count-badge {
+            background: #ffffff;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: var(--shadow);
+            border: 1px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            border-color: var(--accent-blue);
+        }
+
+        .card-id {
+            font-size: 0.65rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: block;
+            font-size: 0.95rem;
+        }
+
+        .card-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+        }
+
+        .status-sent { background: #dbeafe; color: #1e40af; }
+        .status-action { background: #fef3c7; color: #92400e; }
+        .status-confirmed, .status-done { background: #dcfce7; color: #166534; }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            width: 95%;
+            max-width: 600px;
+            max-height: 90vh;
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: var(--text-secondary);
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        pre {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            border: 1px solid var(--card-border);
+            white-space: pre-wrap;
+        }
+
+        .action-item-box {
+            background: #f8fafc;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .action-task {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            display: block;
+            color: var(--text-primary);
+        }
+
+        .close-btn { cursor: pointer; font-size: 1.25rem; color: var(--text-secondary); }
+
+        /* Tabs Styles */
+        .tabs-container {
+            display: flex;
+            background: #e4e7eb;
+            padding: 0.25rem;
+            border-radius: 10px;
+            margin-left: 2rem;
+        }
+
+        .tab {
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .tab.active {
+            background: #ffffff;
+            color: var(--accent-blue);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
+        .contact-type-tag {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            text-transform: uppercase;
+            font-weight: 800;
+            margin-right: 0.4rem;
+            vertical-align: middle;
+        }
+        .tag-email { background: #dbeafe; color: #1e40af; }
+        .tag-messenger { background: #fef3c7; color: #92400e; }
+
+        /* Log Panel */
+        #log-panel { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: #0f172a; border-top: 2px solid #334155; transition: height 0.3s ease; height: 40px; }
+        #log-panel.expanded { height: 280px; }
+        #log-toggle { display: flex; align-items: center; gap: 0.5rem; padding: 0 1rem; height: 40px; cursor: pointer; user-select: none; color: #94a3b8; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; border-bottom: 1px solid #1e293b; }
+        #log-toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: #64748b; }
+        #log-toggle .dot.active { background: #22c55e; box-shadow: 0 0 6px #22c55e; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        #log-body { height: calc(100% - 40px); overflow-y: auto; padding: 0.5rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #94a3b8; }
+        .log-line { padding: 1px 0; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
+        .log-line.stream { color: #38bdf8; }
+        .log-line.error { color: #f87171; }
+        .log-line.success { color: #4ade80; }
+        .log-line.ts { color: #475569; margin-right: 0.5rem; }
+        .dashboard-container { padding-bottom: 60px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        ReqAgent Dashboard
+    </div>
+    
+    <div class="tabs-container">
+        <div class="tab active" data-type="email" onclick="switchTab('email')">Email</div>
+        <div class="tab" data-type="messenger" onclick="switchTab('messenger')">Messenger</div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-primary" onclick="openNewProjectModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            새 프로젝트
+        </button>
+        <button class="btn" onclick="fetchData()">새로고침</button>
+    </div>
+</header>
+
+<!-- Log Panel -->
+<div id="log-panel">
+    <div id="log-toggle" onclick="toggleLog()">
+        <span class="dot" id="log-dot"></span>
+        <span id="log-status">Ollama 로그 ▲</span>
+        <span id="log-last" style="margin-left:auto;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    </div>
+    <div id="log-body"></div>
+</div>
+
+<main class="dashboard-container">
+    <div class="column" id="col-resource">
+        <div class="column-header">
+            <h2 class="column-title">1. Templates</h2>
+            <span class="count-badge" id="count-resource">0</span>
+        </div>
+        <div class="card-list"></div>
+    </div>
+    <div class="column" id="col-step2">
+        <div class="column-header">
+            <h2 class="column-title">2. Drafts / Sent</h2>
+            <span class="count-badge" id="count-step2">0</span>
+        </div>
+        <div class="card-list"></div>
+    </div>
+    <div class="column" id="col-step3">
+        <div class="column-header">
+            <h2 class="column-title">3. Received</h2>
+            <span class="count-badge" id="count-step3">0</span>
+        </div>
+        <div class="card-list"></div>
+    </div>
+    <div class="column" id="col-step4">
+        <div class="column-header">
+            <h2 class="column-title">4. Action Required</h2>
+            <span class="count-badge" id="count-step4">0</span>
+        </div>
+        <div class="card-list"></div>
+    </div>
+    <div class="column" id="col-step5">
+        <div class="column-header">
+            <h2 class="column-title">5. Followup</h2>
+            <span class="count-badge" id="count-step5">0</span>
+        </div>
+        <div class="card-list"></div>
+    </div>
+</main>
+
+<!-- Doc Viewer Modal -->
+<div class="modal" id="viewer-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="viewer-title">JSON Viewer</h2>
+            <span class="close-btn" onclick="closeModal('viewer-modal')">&times;</span>
+        </div>
+        <pre id="viewer-json"></pre>
+    </div>
+</div>
+
+<!-- New Project Modal -->
+<div class="modal" id="new-project-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>새 프로젝트 시작</h2>
+            <span class="close-btn" onclick="closeModal('new-project-modal')">&times;</span>
+        </div>
+        <form id="new-project-form">
+            <div class="form-group">
+                <label>연락 수단</label>
+                <select name="contact_type" style="width: 100%; padding: 0.6rem; border: 1px solid var(--card-border); border-radius: 8px; font-family: inherit; font-size: 0.9rem;">
+                    <option value="email">이메일 (Gmail)</option>
+                    <option value="messenger">메신저 (WhatsApp/SMS/Telegram 등 초안 생성)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>수신자 연락처 (이메일 혹은 전화번호)</label>
+                <input type="text" name="email_address" value="kodyseaconsulting@gmail.com" required>
+            </div>
+            <div class="form-group">
+                <label>나의 정체성</label>
+                <input type="text" name="identity" placeholder="예: 여행 유튜버 트래비스" required>
+            </div>
+            <div class="form-group">
+                <label>촬영 컨셉</label>
+                <input type="text" name="concept" placeholder="예: 한국의 힙한 카페 취재" required>
+            </div>
+            <div class="form-group">
+                <label>포트폴리오 링크</label>
+                <input type="text" name="link" placeholder="유튜브/인스타 등">
+            </div>
+            <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid #eeeff2;">
+            <div class="form-group">
+                <label>장소 이름</label>
+                <input type="text" name="venue_name" placeholder="예: 성수동 서울다이닝" required>
+            </div>
+            <div class="form-group">
+                <label>희망 일정</label>
+                <input type="text" name="schedule" placeholder="예: 4월 20일 오후 3시" required>
+            </div>
+            <div class="form-group">
+                <label>인원 구성</label>
+                <input type="text" name="crew" placeholder="예: 2명">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem; padding: 0.75rem;">
+                프로젝트 기동 (초안 생성 및 메일 발송)
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Action Processing Modal -->
+<div class="modal" id="action-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>액션 아이템 처리</h2>
+            <span class="close-btn" onclick="closeModal('action-modal')">&times;</span>
+        </div>
+        <div id="action-original-reply" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem; max-height: 200px; overflow-y: auto; background: #f1f5f9; padding: 1rem; border-radius: 8px;">
+        </div>
+        <form id="action-form">
+            <input type="hidden" name="req_id" id="action-req-id">
+            <input type="hidden" name="packet_index" id="action-packet-index">
+            <div id="action-items-container"></div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem; padding: 0.75rem;">
+                답변 제출 및 후속 메일 생성
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Followup Review & Send Modal -->
+<div class="modal" id="followup-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>후속 초안 검수 및 발송</h2>
+            <span class="close-btn" onclick="closeModal('followup-modal')">&times;</span>
+        </div>
+        <div id="followup-preview" style="font-size: 0.95rem; line-height: 1.6; background: #f8fafc; border: 1px solid var(--card-border); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; max-height: 400px; overflow-y: auto;">
+        </div>
+        <div id="followup-meta" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <button class="btn btn-primary" id="btn-confirm-send" style="flex: 1; justify-content: center; padding: 0.75rem;">
+                검수 완료 및 최종 발송
+            </button>
+            <button class="btn" onclick="closeModal('followup-modal')" style="flex: 0.3; justify-content: center;">
+                취소
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentData = null;
+    let currentTab = 'email';
+
+    async function fetchData() {
+        try {
+            const resp = await fetch('/api/flow');
+            currentData = await resp.json();
+            renderDashboard(currentData);
+        } catch (e) {
+            console.error("Fetch failed", e);
+        }
+    }
+
+    function switchTab(type) {
+        currentTab = type;
+        document.querySelectorAll('.tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.type === type);
+        });
+        if (currentData) renderDashboard(currentData);
+    }
+
+    function renderDashboard(data) {
+        document.querySelectorAll('.card-list').forEach(l => l.innerHTML = '');
+
+        // Step 1
+        const resList = document.querySelector('#col-resource .card-list');
+        // Step 1은 공통 리소스로 간주하여 필터링 없이 표시하거나, 
+        // 굳이 필터링한다면 data-type을 보게 함. 여기서는 전체 표시.
+        document.getElementById('count-resource').innerText = data.resources.length;
+        data.resources.forEach(res => {
+            const card = createCard(res.name, res.data.project_data?.identity || 'Template', res.data.venue_data?.venue_name || 'Resource', null, res.data);
+            resList.appendChild(card);
+        });
+
+        const flows = Object.values(data.flows);
+        let c = {s2:0, s3:0, s4:0, s5:0};
+
+        flows.forEach(flow => {
+            // 필터링: flow.step2 에 저장된 contact_type 확인
+            const contactType = flow.step2?.contact_type || 'email';
+            if (contactType !== currentTab) return;
+
+            if (flow.step2) {
+                c.s2++;
+                const cardTitle = flow.step2.venue_name || flow.step2.subject || 'Draft';
+                const card = createCard(flow.step2.req_id, cardTitle, flow.step2.status, 'status-sent', flow.step2);
+                document.querySelector('#col-step2 .card-list').appendChild(card);
+            }
+            if (flow.step3) {
+                c.s3++;
+                const card = createCard(flow.step3.req_id, `${flow.step3.replies?.length || 0} Replies`, 'Message Received', 'status-sent', flow.step3);
+                document.querySelector('#col-step3 .card-list').appendChild(card);
+            }
+            if (flow.step4) {
+                c.s4++;
+                const card = createCard(flow.step4.req_id, 'Action Items', 'Waiting User Response', 'status-action', flow.step4);
+                
+                flow.step4.pending_actions.forEach((packet, idx) => {
+                    if (!packet.user_resolved) {
+                        const btn = document.createElement('button');
+                        btn.className = packet.is_confirmation ? 'btn btn-send' : 'btn btn-action';
+                        btn.innerText = packet.is_confirmation ? `장소 확정하기` : `액션 아이템 처리하기 (${idx + 1})`;
+                        btn.onclick = (e) => {
+                            e.stopPropagation();
+                            openActionModal(flow.step4.req_id, idx, packet);
+                        };
+                        card.appendChild(btn);
+                    }
+                });
+                
+                document.querySelector('#col-step4 .card-list').appendChild(card);
+            }
+            if (flow.step5) {
+                c.s5++;
+                const newestDraft = flow.step5.drafts && flow.step5.drafts.length > 0 ? flow.step5.drafts[flow.step5.drafts.length - 1] : null;
+                const status = (newestDraft && newestDraft.status === 'SENT') ? 'SENT' : 'DRAFT_READY';
+                
+                const card = createCard(flow.step5.req_id, 'Followup Prepared', status, status === 'SENT' ? 'status-done' : 'status-sent', flow.step5);
+                
+                if (status !== 'SENT' && newestDraft) {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-send';
+                    btn.innerText = `초안 검수 및 발송`;
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        openFollowupModal(flow.step5.req_id, newestDraft);
+                    };
+                    card.appendChild(btn);
+                }
+                
+                document.querySelector('#col-step5 .card-list').appendChild(card);
+            }
+        });
+
+        document.getElementById('count-step2').innerText = c.s2;
+        document.getElementById('count-step3').innerText = c.s3;
+        document.getElementById('count-step4').innerText = c.s4;
+        document.getElementById('count-step5').innerText = c.s5;
+    }
+
+    function createCard(id, title, meta1, statusClass, fullData) {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.onclick = () => showViewer(id, fullData);
+        const contactType = fullData.contact_type || 'email';
+        div.innerHTML = `
+            <div class="card-id">
+                <span class="contact-type-tag tag-${contactType}">${contactType}</span>
+                ${id}
+            </div>
+            <strong class="card-title">${title}</strong>
+            <div class="card-meta">${meta1}</div>
+            ${statusClass ? `<span class="status-pill ${statusClass}">${statusClass.replace('status-', '').toUpperCase()}</span>` : ''}
+        `;
+        return div;
+    }
+
+    function showViewer(title, data) {
+        document.getElementById('viewer-title').innerText = title;
+        document.getElementById('viewer-json').innerText = JSON.stringify(data, null, 2);
+        document.getElementById('viewer-modal').style.display = 'flex';
+    }
+
+    function openNewProjectModal() {
+        document.getElementById('new-project-modal').style.display = 'flex';
+    }
+
+    function openActionModal(reqId, index, packet) {
+        document.getElementById('action-req-id').value = reqId;
+        document.getElementById('action-packet-index').value = index;
+        document.getElementById('action-original-reply').innerText = "원본 답장: \n" + packet.original_reply;
+        
+        const container = document.getElementById('action-items-container');
+        container.innerHTML = '';
+        const submitBtn = document.querySelector('#action-form button[type="submit"]');
+
+        if (packet.is_confirmation) {
+            container.innerHTML = `
+                <div style="background: #ecfdf5; border: 1px solid #10b981; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; text-align: center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <p style="font-weight: 600; color: #065f46; font-size: 1.1rem; margin-bottom: 0.5rem;">모든 협의가 완료된 것으로 보입니다!</p>
+                    <p style="font-size: 0.85rem; color: #047857;">상대방의 답변에서 특별한 액션 아이템이 발견되지 않았습니다. 이 장소를 '최종 확정' 상태로 변경하시겠습니까?</p>
+                </div>
+            `;
+            submitBtn.innerText = "이 장소 확정하기";
+            submitBtn.onclick = (e) => {
+                e.preventDefault();
+                executeApi('/api/confirm-venue', { req_id: reqId, packet_index: index }, submitBtn, "확정 처리 중...");
+            };
+        } else {
+            packet.items.forEach((item, i) => {
+                const box = document.createElement('div');
+                box.className = 'action-item-box';
+                box.innerHTML = `
+                    <span class="action-task">Q: ${item.task}</span>
+                    <input type="text" class="action-answer-input" data-task="${item.task}" placeholder="답변을 입력하세요..." required style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;">
+                `;
+                container.appendChild(box);
+            });
+            submitBtn.innerText = "답변 제출 및 후속 메일 생성";
+            submitBtn.onclick = null; // Revert to default form submit
+        }
+        
+        document.getElementById('action-modal').style.display = 'flex';
+    }
+
+    function openFollowupModal(reqId, draftData) {
+        const preview = document.getElementById('followup-preview');
+        preview.innerText = draftData.draft;
+        
+        const meta = document.getElementById('followup-meta');
+        meta.innerText = `Based on: ${draftData.based_on_action}\nCreated at: ${draftData.created_at}`;
+        
+        const btn = document.getElementById('btn-confirm-send');
+        btn.onclick = () => {
+            executeApi('/api/send-followup', { req_id: reqId }, btn, "발송 중...");
+        };
+        
+        document.getElementById('followup-modal').style.display = 'flex';
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    document.getElementById('new-project-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        executeApi('/api/new-project', data, e.target.querySelector('button'), "기동 중... (LLM 작동 중)");
+    };
+
+    document.getElementById('action-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const req_id = document.getElementById('action-req-id').value;
+        const packet_index = parseInt(document.getElementById('action-packet-index').value);
+        const answers = {};
+        
+        document.querySelectorAll('.action-answer-input').forEach(input => {
+            answers[input.dataset.task] = input.value;
+        });
+
+        const data = { req_id, packet_index, answers };
+        executeApi('/api/resolve-actions', data, e.target.querySelector('button'), "처리 중... (후속 초안 생성)");
+    };
+
+    async function executeApi(url, body, btn, loadingText) {
+        try {
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = loadingText;
+
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const result = await resp.json();
+            
+            if (result.status === 'success') {
+                alert('완료되었습니다!');
+                document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+                fetchData();
+            } else {
+                alert('오류: ' + result.message);
+            }
+            btn.disabled = false;
+            btn.innerText = originalText;
+        } catch (err) {
+            alert('연결 오류: ' + err.message);
+            btn.disabled = false;
+        }
+    }
+
+    window.onclick = (e) => {
+        if (e.target.classList.contains('modal')) e.target.style.display = 'none';
+    };
+
+    fetchData();
+    setInterval(fetchData, 30000);
+
+    // =========================================================
+    // Log Panel — SSE
+    // =========================================================
+    let logExpanded = false;
+
+    function toggleLog() {
+        logExpanded = !logExpanded;
+        document.getElementById('log-panel').classList.toggle('expanded', logExpanded);
+        document.getElementById('log-status').innerText = logExpanded ? 'Ollama 로그 ▼' : 'Ollama 로그 ▲';
+    }
+
+    function appendLog(entry) {
+        const body = document.getElementById('log-body');
+        const line = document.createElement('div');
+        const msg = entry.msg || '';
+        line.className = 'log-line' +
+            (entry.stream ? ' stream' : '') +
+            (msg.includes('[!]') || msg.toLowerCase().includes('error') || msg.toLowerCase().includes('failed') ? ' error' : '') +
+            (msg.includes('[+]') ? ' success' : '');
+
+        if (entry.stream) {
+            const last = body.lastElementChild;
+            if (last && last.classList.contains('stream')) {
+                last.innerText += msg;
+                document.getElementById('log-last').innerText = last.innerText.slice(-60);
+                return;
+            }
+        }
+        line.innerHTML = `<span class="ts">[${entry.ts}]</span>${msg}`;
+        body.appendChild(line);
+        body.scrollTop = body.scrollHeight;
+        document.getElementById('log-last').innerText = msg.slice(0, 80);
+    }
+
+    function startLogStream() {
+        const es = new EventSource('/api/logs/stream');
+        es.onopen = () => {
+            document.getElementById('log-dot').classList.add('active');
+        };
+        es.onmessage = (e) => {
+            try { appendLog(JSON.parse(e.data)); } catch {}
+        };
+        es.onerror = () => {
+            document.getElementById('log-dot').classList.remove('active');
+            setTimeout(startLogStream, 3000);
+        };
+    }
+    startLogStream();
+</script>
+
+</body>
+</html>
